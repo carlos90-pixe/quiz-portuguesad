@@ -2,31 +2,35 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class QuizPortugues : MonoBehaviour
+public class QuizPortugues2 : MonoBehaviour
 {
     public TMP_Text perguntaTexto;
-    public TMP_Text resultadoTexto;
     public TMP_Text pontosTexto;
-
+    public TMP_Text mensagemTexto;
     public Button[] botoes;
+
     private int pontos = 0;
+    private int perguntaAtual = 0;
 
     private string[] perguntas =
     {
-        "Qual é o plural de animal?",
-        "Qual palavra é um verbo?",
-        "Qual é o antônimo de feliz?"
+        "Qual é o aumentativo de casa?",
+        "Qual palavra está escrita corretamente?",
+        "Qual é o feminino de ator?",
+        "Qual é o coletivo de peixes?",
+        "Qual palavra é um adjetivo?"
     };
 
-    private string[][] alternativas =
+    private string[,] opcoes =
     {
-        new string[] { "Animales", "Animais", "Animalis", "Animal" },
-        new string[] { "Casa", "Bonito", "Correr", "Mesa" },
-        new string[] { "Alegre", "Contente", "Triste", "Feliz" }
+        { "Casinha", "Casarão", "Casebre", "Casota" },
+        { "Caxorro", "Cachoro", "Cachorro", "Cachoroa" },
+        { "Atriz", "Autora", "Atora", "Atorina" },
+        { "Alcateia", "Cardume", "Enxame", "Manada" },
+        { "Correr", "Rapidamente", "Bonito", "Escola" }
     };
 
-    private int[] respostas = { 1, 2, 2 };
-    private int indice = 0;
+    private int[] corretas = { 1, 2, 0, 1, 2 };
 
     void Start()
     {
@@ -35,47 +39,62 @@ public class QuizPortugues : MonoBehaviour
 
     void MostrarPergunta()
     {
-        if (indice >= perguntas.Length)
+        if (perguntaAtual >= perguntas.Length)
         {
-            perguntaTexto.text = "Fim do quiz!";
-            resultadoTexto.text = "Você fez " + pontos + " pontos!";
+            perguntaTexto.text = "Quiz finalizado!";
+            mensagemTexto.text = "Pontuação final: " + pontos;
             pontosTexto.text = "";
+
             foreach (Button botao in botoes)
                 botao.gameObject.SetActive(false);
+
             return;
         }
 
-        perguntaTexto.text = perguntas[indice];
+        perguntaTexto.text = perguntas[perguntaAtual];
         pontosTexto.text = "Pontos: " + pontos;
-        resultadoTexto.text = "";
+        mensagemTexto.text = "";
 
         for (int i = 0; i < botoes.Length; i++)
         {
-            int respostaEscolhida = i;
+            int escolha = i;
+
             botoes[i].gameObject.SetActive(true);
             botoes[i].GetComponentInChildren<TMP_Text>().text =
-                alternativas[indice][i];
+                opcoes[perguntaAtual, i];
 
             botoes[i].onClick.RemoveAllListeners();
             botoes[i].onClick.AddListener(
-                () => VerificarResposta(respostaEscolhida));
+                () => Responder(escolha)
+            );
         }
     }
 
-    void VerificarResposta(int escolha)
+    void Responder(int escolha)
     {
-        if (escolha == respostas[indice])
+        foreach (Button botao in botoes)
+            botao.interactable = false;
+
+        if (escolha == corretas[perguntaAtual])
         {
             pontos += 10;
-            resultadoTexto.text = "Resposta correta! +10 pontos";
+            mensagemTexto.text = "Muito bem! +10 pontos!";
         }
         else
         {
-            resultadoTexto.text = "Resposta errada!";
+            mensagemTexto.text = "Ops! Tente acertar a próxima!";
         }
 
-        indice++;
-        CancelInvoke();
-        Invoke(nameof(MostrarPergunta), 1.5f);
+        perguntaAtual++;
+
+        Invoke(nameof(Avancar), 1.5f);
+    }
+
+    void Avancar()
+    {
+        foreach (Button botao in botoes)
+            botao.interactable = true;
+
+        MostrarPergunta();
     }
 }
